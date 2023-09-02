@@ -2,6 +2,9 @@ FLK3D = FLK3D or {}
 FLK3D.Version = "0.1"
 FLK3D.Debug = true
 
+FLK3D.DO_PERSP_CORRECT_COLOUR   = true
+FLK3D.DO_PERSP_CORRECT_TEXTURE  = true
+
 local relaPath = "flk3d/"
 function FLK3D.LoadFile(path)
     require(relaPath .. path)
@@ -12,6 +15,8 @@ FLK3D.LoadFile("libs/lvec")
 FLK3D.LoadFile("libs/lang")
 FLK3D.LoadFile("libs/lknoise")
 FLK3D.LoadFile("libs/lktex")
+
+FLK3D.SunDir = Vector(1, 2, 4):GetNormalized()
 
 if love then
     FLK3D.LoadFile("renderlove")

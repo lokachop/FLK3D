@@ -120,10 +120,10 @@ local function baryCentric(px, py, ax, ay, bx, by, cx, cy)
 	return v, w, u
 end
 
-local function isTopLeft()
-end
 
-function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, cont, d0, d1, d2, v0_w, v1_w, v2_w, u0, v0, u1, v1, u2, v2, tdata)
+local perspCol = FLK3D.DO_PERSP_CORRECT_COLOUR
+local perspTex = FLK3D.DO_PERSP_CORRECT_TEXTURE
+function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1_w, v2_w, u0, v0, u1, v1, u2, v2, tdata)
 	local rt = FLK3D.CurrRT
 	local rtParams = rt._params
 	local rtW, rtH = rtParams.w, rtParams.h
@@ -166,18 +166,31 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, cont, d0, d1, d2, v0
 
 			local prev = dbuff[x + (y * rtW)]
 			if (dCalc < prev) then
-				local uCalc = ((w0 * u0) + (w1 * u1) + (w2 * u2)) / -wCalc
-				local vCalc = ((w0 * v0) + (w1 * v1) + (w2 * v2)) / -wCalc
+				local negW = -wCalc
+				local uCalc = ((w0 * u0) + (w1 * u1) + (w2 * u2))
+				local vCalc = ((w0 * v0) + (w1 * v1) + (w2 * v2))
+
+				if perspTex then
+					uCalc = uCalc / negW
+					vCalc = vCalc / negW
+				end
 
 				local tu = math.floor((texW - 1) * uCalc) % texW
 				local tv = math.floor((texH - 1) * vCalc) % texH
 
-				local tCol = tdata[tu + (tv * texW)]
-				if not tCol then
-					tCol = {255, 0, 0}
+				local rCalc = ((w0 * c0[1]) + (w1 * c1[1]) + (w2 * c2[1]))
+				local gCalc = ((w0 * c0[2]) + (w1 * c1[2]) + (w2 * c2[2]))
+				local bCalc = ((w0 * c0[3]) + (w1 * c1[3]) + (w2 * c2[3]))
+
+				if perspCol then
+					rCalc = rCalc / negW
+					gCalc = gCalc / negW
+					bCalc = bCalc / negW
 				end
 
-				rt[x + (y * rtW)] = {tCol[1], tCol[2], tCol[3]}
+				local tCol = tdata[tu + (tv * texW)]
+
+				rt[x + (y * rtW)] = {tCol[1] * rCalc, tCol[2] * gCalc, tCol[3] * bCalc}
 				dbuff[x + (y * rtW)] = dCalc
 
 
@@ -487,8 +500,10 @@ function FLK3D.DrawText(content, message, xAdd, yAdd, background)
 				local ymLocal = y * rtW
 
 				local realPos = xmReal + ymLocal + base
-				if background and x == 6 then
+				if (background ~= nil) and x == 6 then
 					rt[realPos] = background
+					goto _contText
+				elseif x == 6 then
 					goto _contText
 				end
 

@@ -10,7 +10,7 @@ function FLK3D.AddObjectToUniv(name, mdl)
 		pos = Vector(0, 0, 0),
 		ang = Angle(0, 0, 0),
 		scl = Vector(1, 1, 1),
-		col = {255, 255, 255},
+		col = {1, 1, 1},
 		mat = "none",
 		mat_rot = mat_rot,
 		mat_transscl = mat_transscl
@@ -45,7 +45,7 @@ function FLK3D.SetObjectScl(name, scl)
 end
 
 function FLK3D.SetObjectCol(name, col)
-	FLK3D.CurrUniv["objects"][name].col = col or {255, 255, 255}
+	FLK3D.CurrUniv["objects"][name].col = col and {col[1], col[2], col[3]} or {1, 1, 1}
 end
 
 function FLK3D.SetObjectMat(name, mat)

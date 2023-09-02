@@ -123,6 +123,7 @@ function LKTEX.LoadPPM(name, path)
     LKTEX.Textures[name] = data
 end
 
+
 LKTEX.LoadPPM("loka",       "textures/loka.ppm")
 LKTEX.LoadPPM("jelly",      "textures/jelly.ppm")
 LKTEX.LoadPPM("jet",        "textures/jet.ppm")
@@ -142,3 +143,39 @@ function LKTEX.GetTexture(name)
 
     return tex
 end
+
+function LKTEX.GenerateEmpty(name, w, h, col)
+    local data = {}
+    data.data = {w, h}
+
+    for i = 0, ((w * h) - 1) do
+        data[i] = col or {255, 255, 255}
+    end
+    LKTEX.Textures[name] = data
+end
+
+function LKTEX.GenerateFunc(name, w, h, func)
+    local data = {}
+    data.data = {w, h}
+
+    for i = 0, ((w * h) - 1) do
+        local xc = i % w
+        local yc = math.floor(i / w)
+        local fine, dataFunc = pcall(func, xc, yc)
+        if not fine then
+            print("TextureInit error!;" .. dataFunc)
+            dataFunc = {255, 255, 0}
+        end
+
+        data[i] = dataFunc
+    end
+    LKTEX.Textures[name] = data
+end
+
+function LKTEX.ClearTexture(name, data)
+    for i = 0, ((w * h) - 1) do
+        LKTEX.Textures[name][i] = data
+    end
+end
+
+LKTEX.GenerateEmpty("white", 16, 16, {255, 255, 255})

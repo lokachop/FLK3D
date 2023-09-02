@@ -154,6 +154,11 @@ local sampleCount = 16
 for i = 0, sampleCount - 1 do
 	avgDtSamples[i] = 0
 end
+
+local _red = {255, 0, 0}
+local _yellow = {255, 255, 0}
+local _green = {0, 255, 0}
+local _background = nil
 local function renderDebug()
 	if not FLK3D.Debug then
 		return
@@ -164,10 +169,10 @@ local function renderDebug()
 	local w, h = rtParams.w, rtParams.h
 
 	local yVar = 1
-	FLK3D.DrawText({0, 255, 0}, "FLK3D v" .. FLK3D.Version, 1, yVar, {0, 0, 0})
+	FLK3D.DrawText({0, 255, 0}, "FLK3D v" .. FLK3D.Version, 1, yVar, _background)
 	yVar = yVar + 8
 
-	FLK3D.DrawText({0, 255, 0}, tostring(w) .. "x" .. tostring(h), 1, yVar, {0, 0, 0})
+	FLK3D.DrawText({0, 255, 0}, tostring(w) .. "x" .. tostring(h), 1, yVar, _background)
 	yVar = yVar + 8
 
 
@@ -184,22 +189,25 @@ local function renderDebug()
 	end
 	avgDT = avgDT / sampleCount
 
-	FLK3D.DrawText({0, 255, 0}, "FPS : " .. string.format("%.2f", 1 / avgDT), 1, yVar, {0, 0, 0})
+	local fpsVar = 1 / avgDT
+	local fpsCol = fpsVar < 20 and _red or (fpsVar < 60 and _yellow or _green)
+
+	FLK3D.DrawText(fpsCol, "FPS : " .. string.format("%.2f", fpsVar), 1, yVar, _background)
 	yVar = yVar + 8
 
-	FLK3D.DrawText({0, 255, 0}, "DT  : " .. string.format("%.2f", avgDT * 1000) .. "ms", 1, yVar, {0, 0, 0})
+	FLK3D.DrawText({0, 255, 0}, "DT  : " .. string.format("%.2f", avgDT * 1000) .. "ms", 1, yVar, _background)
 	yVar = yVar + 8
 
-	FLK3D.DrawText({0, 255, 0}, "OBJ : " .. _dbgOBJCount, 1, yVar, {0, 0, 0})
+	FLK3D.DrawText({0, 255, 0}, "OBJ : " .. _dbgOBJCount, 1, yVar, _background)
 	yVar = yVar + 8
 
-	FLK3D.DrawText({0, 255, 0}, "TRIS: " .. _dbgTriCount, 1, yVar, {0, 0, 0})
+	FLK3D.DrawText({0, 255, 0}, "TRIS: " .. _dbgTriCount, 1, yVar, _background)
 	yVar = yVar + 8
 
-	FLK3D.DrawText({0, 255, 0}, "VERT: " .. _dbgVertCount, 1, yVar, {0, 0, 0})
+	FLK3D.DrawText({0, 255, 0}, "VERT: " .. _dbgVertCount, 1, yVar, _background)
 	yVar = yVar + 8
 
-	FLK3D.DrawText({0, 255, 0}, "FRAG: " .. FLK3D.DebugFragments, 1, yVar, {0, 0, 0})
+	FLK3D.DrawText({0, 255, 0}, "FRAG: " .. FLK3D.DebugFragments, 1, yVar, _background)
 	yVar = yVar + 8
 
 	_dbgOBJCount = 0
@@ -209,7 +217,8 @@ local function renderDebug()
 end
 
 
-
+local perspCol = FLK3D.DO_PERSP_CORRECT_COLOUR
+local perspTex = FLK3D.DO_PERSP_CORRECT_TEXTURE
 local function renderObject(obj)
 	local rt = FLK3D.CurrRT
 	local rtParams = rt._params
@@ -294,6 +303,57 @@ local function renderObject(obj)
 		local pcol_s2 = {objColR, objColG, objColB}
 		local pcol_s3 = {objColR, objColG, objColB}
 
+		if obj["SHADING"] and obj["SHADING_SMOOTH"] then
+			local norm1 = s_normals[idx[1][1]]:Copy()
+			norm1 = norm1 * obj.mat_rot
+
+			local norm2 = s_normals[idx[2][1]]:Copy()
+			norm2 = norm2 * obj.mat_rot
+
+			local norm3 = s_normals[idx[3][1]]:Copy()
+			norm3 = norm3 * obj.mat_rot
+
+			local dot1 = norm1:Dot(FLK3D.SunDir)
+			local dot2 = norm2:Dot(FLK3D.SunDir)
+			local dot3 = norm3:Dot(FLK3D.SunDir)
+
+			dot1 = math.max((dot1 + 2) * .25, 0)
+			dot2 = math.max((dot2 + 2) * .25, 0)
+			dot3 = math.max((dot3 + 2) * .25, 0)
+
+			pcol_s1[1] = pcol_s1[1] * dot1
+			pcol_s1[2] = pcol_s1[2] * dot1
+			pcol_s1[3] = pcol_s1[3] * dot1
+
+			pcol_s2[1] = pcol_s2[1] * dot2
+			pcol_s2[2] = pcol_s2[2] * dot2
+			pcol_s2[3] = pcol_s2[3] * dot2
+
+			pcol_s3[1] = pcol_s3[1] * dot3
+			pcol_s3[2] = pcol_s3[2] * dot3
+			pcol_s3[3] = pcol_s3[3] * dot3
+		elseif obj["SHADING"] then
+			local norm = normals[i]:Copy()
+			norm = norm * obj.mat_rot
+
+			local dot = norm:Dot(FLK3D.SunDir)
+			dot = math.max((dot + 2) * .25, 0)
+
+			pcol_s1[1] = pcol_s1[1] * dot
+			pcol_s1[2] = pcol_s1[2] * dot
+			pcol_s1[3] = pcol_s1[3] * dot
+
+			pcol_s2[1] = pcol_s2[1] * dot
+			pcol_s2[2] = pcol_s2[2] * dot
+			pcol_s2[3] = pcol_s2[3] * dot
+
+			pcol_s3[1] = pcol_s3[1] * dot
+			pcol_s3[2] = pcol_s3[2] * dot
+			pcol_s3[3] = pcol_s3[3] * dot
+		end
+
+
+
 		-- lets do clipping!
 		local tris, uvs, cols = clipTri(v1s, v2s, v3s, puv1, puv2, puv3, pcol_s1, pcol_s2, pcol_s3)
 		if not tris then
@@ -317,10 +377,6 @@ local function renderObject(obj)
 			local uv2 = uvsC[2]
 			local uv3 = uvsC[3]
 
-
-			local col_s1 = colsC[1]
-			local col_s2 = colsC[2]
-			local col_s3 = colsC[3]
 
 			local d1s, d2s, d3s = cv1[3], cv2[3], cv3[3]
 			if (d1s >= 1) or (d2s >= 1) or (d3s >= 1) then
@@ -348,13 +404,41 @@ local function renderObject(obj)
 				goto _contRender
 			end
 
-			local tu1, tv1 = uv1[1] / d1, uv1[2] / d1
-			local tu2, tv2 = uv2[1] / d2, uv2[2] / d2
-			local tu3, tv3 = uv3[1] / d3, uv3[2] / d3
 
+			local tu1, tv1 = uv1[1], uv1[2]
+			local tu2, tv2 = uv2[1], uv2[2]
+			local tu3, tv3 = uv3[1], uv3[2]
+			if perspTex then
+				tu1, tv1 = tu1 / d1, tv1 / d1
+				tu2, tv2 = tu2 / d2, tv2 / d2
+				tu3, tv3 = tu3 / d3, tv3 / d3
+			end
 
-			FLK3D.RenderTriangleSimple(px1, py1, px2, py2, px3, py3, {255, 0, 0},
-			d1, d2, d3,
+			local col_s1, col_s2, col_s3
+
+			if perspCol then
+				col_s1 = {colsC[1][1], colsC[1][2], colsC[1][3]}
+				col_s1[1] = col_s1[1] / d1
+				col_s1[2] = col_s1[2] / d1
+				col_s1[3] = col_s1[3] / d1
+
+				col_s2 = {colsC[2][1], colsC[2][2], colsC[2][3]}
+				col_s2[1] = col_s2[1] / d2
+				col_s2[2] = col_s2[2] / d2
+				col_s2[3] = col_s2[3] / d2
+
+				col_s3 = {colsC[3][1], colsC[3][2], colsC[3][3]}
+				col_s3[1] = col_s3[1] / d3
+				col_s3[2] = col_s3[2] / d3
+				col_s3[3] = col_s3[3] / d3
+			else
+				col_s1 = colsC[1]
+				col_s2 = colsC[2]
+				col_s3 = colsC[3]
+			end
+
+			FLK3D.RenderTriangleSimple(px1, py1, px2, py2, px3, py3,
+			col_s1, col_s2, col_s3,
 			v1_w, v2_w, v3_w,
 			tu1, tv1, tu2, tv2, tu3, tv3, textureData
 			)

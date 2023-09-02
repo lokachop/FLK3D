@@ -18,6 +18,9 @@ function love.load()
 
 		FLK3D.AddObjectToUniv("cube1", "cube")
 		FLK3D.SetObjectPos("cube1", Vector(-2, 0, 0))
+		FLK3D.SetObjectMat("cube1", "none")
+		FLK3D.SetObjectFlag("cube1", "SHADING", true)
+		FLK3D.SetObjectFlag("cube1", "SHADING_SMOOTH", true)
 
 		FLK3D.AddObjectToUniv("train1", "train")
 		FLK3D.SetObjectMat("train1", "train_sheet")
@@ -40,7 +43,6 @@ function love.update(dt)
 	FLK3D.NoclipCam(dt)
 
 	FLK3D.PushUniverse(UnivTest)
-		--FLK3D.AddObjectToUniv("cube1", "cube")
 		FLK3D.SetObjectAng("cube1", Angle(CurTime * 64, CurTime * 48, 0))
 	FLK3D.PopUniverse()
 end
@@ -48,16 +50,12 @@ end
 local cx, cy = 128, 128
 
 function love.draw()
-	--love.graphics.clear(.1, .15, .2)
-
-
+	love.graphics.clear(0, 0, 0)
 	FLK3D.PushUniverse(UnivTest)
 	FLK3D.PushRenderTarget(RTTest)
 		FLK3D.Clear(32, 48, 64)
 
 		FLK3D.RenderActiveUniverse()
-		--FLK3D.DrawText({255, 0, 0}, "FPS:" .. math.floor(FLK3D.FPS), 1, 1, {0, 0, 0})
-
 
 		FLK3D.RenderRTToScreen()
 	FLK3D.PopRenderTarget()

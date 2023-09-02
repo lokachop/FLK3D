@@ -2,7 +2,7 @@ FLK3D = FLK3D or {}
 FLK3D.LOVE_DEBUG_BUFF = {}
 
 
-local _scl = 2
+local _scl = 3
 local scrW, scrH = love.graphics.getDimensions()
 function FLK3D.RenderRTToScreen()
     -- renders magnified
@@ -33,7 +33,11 @@ function FLK3D.RenderRTToScreen()
     rt.lv_img:replacePixels(rt.lv_imgdat)
     love.graphics.setBlendMode("alpha", "premultiplied")
     love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.draw(rt.lv_img, 0, 0, 0, _scl, _scl)
+
+    local cX = (scrW * .5) - ((rtW * .5) * _scl)
+    local cY = (scrH * .5) - ((rtH * .5) * _scl)
+
+    love.graphics.draw(rt.lv_img, cX, cY, 0, _scl, _scl)
 end
 
 
