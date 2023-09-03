@@ -1,11 +1,10 @@
 function love.load()
-	_LKPXDEBUG = false
 	love.filesystem.load("/flk3d/flk3d.lua")()
 	CurTime = 0
 
 
 	UnivTest = FLK3D.NewUniverse("test1")
-	local rw, rh = 256, 256
+	local rw, rh = 256, 192
 	RTTest = FLK3D.NewRenderTarget("test2", rw, rh)
 
 	FLK3D.BuildProjectionMatrix(rw / rh, 0.1, 1000)
@@ -22,13 +21,25 @@ function love.load()
 		FLK3D.SetObjectFlag("cube1", "SHADING", true)
 		FLK3D.SetObjectFlag("cube1", "SHADING_SMOOTH", true)
 
-		FLK3D.AddObjectToUniv("train1", "train")
-		FLK3D.SetObjectMat("train1", "train_sheet")
-		FLK3D.SetObjectPos("train1", Vector(4, 0, 0))
 
-		FLK3D.AddObjectToUniv("track1", "traintrack_hq")
-		FLK3D.SetObjectMat("track1", "traintrack_sheet")
-		FLK3D.SetObjectPos("track1", Vector(4, -2, 0))
+		for i = 1, 3 do
+			local indSeries = i .. "s"
+			local indTrain = "train" .. indSeries
+			local xc = 2 + (i * 3)
+
+			FLK3D.AddObjectToUniv(indTrain, "train")
+			FLK3D.SetObjectMat(indTrain, "train_sheet")
+			FLK3D.SetObjectPos(indTrain, Vector(xc, 0, 0))
+
+			for j = 1, 4 do
+				local indTrack = "track" .. indSeries .. j
+				local zc = (j - 1) * 16
+
+				FLK3D.AddObjectToUniv(indTrack, "traintrack")
+				FLK3D.SetObjectMat(indTrack, "traintrack_sheet")
+				FLK3D.SetObjectPos(indTrack, Vector(xc, -2, zc))
+			end
+		end
 
 		--[[
 		for i = 1, 16 do
@@ -38,9 +49,18 @@ function love.load()
 	FLK3D.PopUniverse()
 end
 
+function love.keypressed(key)
+	FLK3D.ToggleMouseLock(key)
+end
+
+function love.mousemoved(mx, my, dx, dy)
+	FLK3D.MouseCamUpdate(dx, dy)
+end
+
 function love.update(dt)
 	CurTime = CurTime + dt
-	FLK3D.NoclipCam(dt)
+	--FLK3D.NoclipCam(dt)
+	FLK3D.MouseCamThink(dt)
 
 	FLK3D.PushUniverse(UnivTest)
 		FLK3D.SetObjectAng("cube1", Angle(CurTime * 64, CurTime * 48, 0))

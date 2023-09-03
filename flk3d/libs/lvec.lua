@@ -52,7 +52,13 @@ local v_meta = {
         end
     end,
     ["__div"] = function(x, y)
-        return LVEC.Vector(x[1] / y[1], x[2] / y[2], x[3] / y[3])
+        if tonumber(y) ~= nil then
+            return LVEC.Vector(x[1] / y, x[2] / y, x[3] / y)
+        elseif tonumber(x) ~= nil then
+            return LVEC.Vector(y[1] / x, y[2] / x, y[3] / x)
+        else
+            return LVEC.Vector(x[1] / y[1], x[2] / y[2], x[3] / y[3])
+        end
     end,
     ["__pow"] = function(x, y)
         if tonumber(y) ~= nil then

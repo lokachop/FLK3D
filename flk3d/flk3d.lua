@@ -1,9 +1,12 @@
 FLK3D = FLK3D or {}
-FLK3D.Version = "0.1"
+FLK3D.Version = "0.2"
 FLK3D.Debug = true
 
 FLK3D.DO_PERSP_CORRECT_COLOUR   = true
 FLK3D.DO_PERSP_CORRECT_TEXTURE  = true
+
+FLK3D.TEXINTERP_MODE = 1 -- 0 = nearest, 1 = bayer
+FLK3D.WIREFRAME = 0
 
 local relaPath = "flk3d/"
 function FLK3D.LoadFile(path)

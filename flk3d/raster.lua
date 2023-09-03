@@ -1,11 +1,13 @@
 FLK3D = FLK3D or {}
+local math = math
+local math_floor = math.floor
 
 local function math_round(x)
-	local dec = x - math.floor(x)
+	local dec = x - math_floor(x)
 	if dec > .5 then
 		return math.ceil(x)
 	else
-		return math.floor(x)
+		return math_floor(x)
 	end
 end
 
@@ -34,7 +36,25 @@ local function lineLow(x1, y1, x2, y2, cont, w, h, rt)
 	local y = y1
 
 	for x = x1, x2 do
+		if y >= h then
+			goto _contLineLow
+		end
+
+		if x >= w then
+			goto _contLineLow
+		end
+
+		if y < 0 then
+			goto _contLineLow
+		end
+
+		if x < 0 then
+			goto _contLineLow
+		end
+
+
 		rt[x + (y * w)] = cont
+		::_contLineLow::
 
 		if D > 0 then
 			y = y + yi
@@ -56,8 +76,30 @@ local function lineHigh(x1, y1, x2, y2, cont, w, h, rt)
 	local D = (2 * dx) - dy
 	local x = x1
 
+	if y1 > h then
+		return
+	end
+
 	for y = y1, y2 do
+		if y >= h then
+			goto _contLineHigh
+		end
+
+		if x >= w then
+			goto _contLineHigh
+		end
+
+		if y < 0 then
+			goto _contLineHigh
+		end
+
+		if x < 0 then
+			goto _contLineHigh
+		end
+
+
 		rt[x + (y * w)] = cont
+		::_contLineHigh::
 
 		if D > 0 then
 			x = x + xi
@@ -65,6 +107,7 @@ local function lineHigh(x1, y1, x2, y2, cont, w, h, rt)
 		else
 			D = D + 2 * dx
 		end
+
 	end
 end
 
@@ -121,8 +164,23 @@ local function baryCentric(px, py, ax, ay, bx, by, cx, cy)
 end
 
 
+local bayer4 = {
+	 0 / 16,  8 / 16,  1 / 16,  9 / 16,
+	12 / 16,  4 / 16, 13 / 16,  5 / 16,
+	 3 / 16, 11 / 16,  2 / 16, 10 / 16,
+	15 / 16,  7 / 16, 14 / 16,  6 / 16,
+}
+
+
 local perspCol = FLK3D.DO_PERSP_CORRECT_COLOUR
 local perspTex = FLK3D.DO_PERSP_CORRECT_TEXTURE
+
+local _TEX_NEAREST = 0
+local _TEX_BAYER = 1
+
+local _table = {255, 0, 0}
+local _white = {255, 255, 255}
+local texMode = FLK3D.TEXINTERP_MODE
 function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1_w, v2_w, u0, v0, u1, v1, u2, v2, tdata)
 	local rt = FLK3D.CurrRT
 	local rtParams = rt._params
@@ -130,12 +188,21 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1
 
 	local dbuff = rt._depth
 
-	x0 = math.floor(x0)
-	y0 = math.floor(y0)
-	x1 = math.floor(x1)
-	y1 = math.floor(y1)
-	x2 = math.floor(x2)
-	y2 = math.floor(y2)
+	x0 = math_floor(x0)
+	y0 = math_floor(y0)
+	x1 = math_floor(x1)
+	y1 = math_floor(y1)
+	x2 = math_floor(x2)
+	y2 = math_floor(y2)
+
+	if FLK3D.WIREFRAME == 1 then
+		FLK3D.RenderLine(x0, y0, x1, y1, _white)
+		FLK3D.RenderLine(x0, y0, x2, y2, _white)
+
+		FLK3D.RenderLine(x1, y1, x2, y2, _white)
+
+		return
+	end
 
 
 	local minX = math.min(x0, x1, x2)
@@ -150,6 +217,14 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1
 
 	local texW, texH = tdata.data[1], tdata.data[2]
 
+	if FLK3D.Debug then
+		local dx = maxX - minX
+		local dy = maxY - minY
+
+		FLK3D.DebugFragmentsAttempted = FLK3D.DebugFragmentsAttempted + (dx * dy)
+	end
+
+
 	for y = minY, maxY do
 		for x = minX, maxX do
 			local w1, w2, w0 = baryCentric(x + .5, y + .5, x0, y0, x1, y1, x2, y2)
@@ -157,9 +232,6 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1
 			if w0 < 0 or w1 < 0 or w2 < 0 then
 				goto _contBary
 			end
-
-			x = math.floor(x)
-			y = math.floor(y)
 
 			local wCalc = -((w0 * v0_w) + (w1 * v1_w) + (w2 * v2_w))
 			local dCalc = (1 / wCalc)
@@ -175,8 +247,20 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1
 					vCalc = vCalc / negW
 				end
 
-				local tu = math.floor((texW - 1) * uCalc) % texW
-				local tv = math.floor((texH - 1) * vCalc) % texH
+				local tCol = _table
+				if texMode == _TEX_NEAREST then
+					local tu = math_floor(texW * uCalc) % texW
+					local tv = math_floor(texH * vCalc) % texH
+
+					tCol = tdata[tu + (tv * texW)]
+				elseif texMode == _TEX_BAYER then
+					local bayerIdx = (x % 4) + ((y % 4) * 4) + 1
+
+					local tu = math_floor((texW * uCalc) + bayer4[bayerIdx]) % texW
+					local tv = math_floor((texH * vCalc) + bayer4[bayerIdx]) % texH
+
+					tCol = tdata[tu + (tv * texW)]
+				end
 
 				local rCalc = ((w0 * c0[1]) + (w1 * c1[1]) + (w2 * c2[1]))
 				local gCalc = ((w0 * c0[2]) + (w1 * c1[2]) + (w2 * c2[2]))
@@ -187,8 +271,6 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1
 					gCalc = gCalc / negW
 					bCalc = bCalc / negW
 				end
-
-				local tCol = tdata[tu + (tv * texW)]
 
 				rt[x + (y * rtW)] = {tCol[1] * rCalc, tCol[2] * gCalc, tCol[3] * bCalc}
 				dbuff[x + (y * rtW)] = dCalc

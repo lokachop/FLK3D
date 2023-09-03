@@ -171,6 +171,52 @@ local mat_meta = {
         x:SetMatrix(mul)
     end,
 
+    -- https://stackoverflow.com/questions/15022630/how-to-calculate-the-angle-from-rotation-matrix
+    ["GetAngles"] = function(x)
+        local pi = math.pi
+
+        local pitch, yaw, roll = 0, 0, 0
+
+        if x[9] ~= 1 and x[9] ~= -1 then
+            local pitch_1 = -1 * math.asin(x[9])
+            --local pitch_2 = pi - pitch_1
+
+            local roll_1 = math.atan2(x[10] / math.cos(pitch_1) , x[11] / math.cos(pitch_1))
+            --local roll_2 = math.atan2(x[10] / math.cos(pitch_2) , x[11] / math.cos(pitch_2))
+            local yaw_1 = math.atan2(x[5]   / math.cos(pitch_1) , x[1]  / math.cos(pitch_1))
+            --local yaw_2 = math.atan2(x[5]   / math.cos(pitch_2) , x[1]  / math.cos(pitch_2))
+
+            pitch = pitch_1
+            roll = roll_1
+            yaw = yaw_1
+        else
+            yaw = 0
+            if x[9] == -1 then
+                pitch = pi / 2
+                roll = yaw + math.atan2(x[2], x[3])
+            else
+                pitch = -pi / 2
+                roll = -1 * yaw + math.atan2(-1 * x[2], -1 * x[3])
+            end
+        end
+
+        roll = math.deg(roll)
+        pitch = math.deg(pitch)
+        yaw = math.deg(yaw)
+
+        return Angle(-roll, pitch, yaw)
+    end,
+
+    ["Right"] = function(x)
+        return Vector(x[1], x[2], x[3])
+    end,
+    ["Up"] = function(x)
+        return Vector(-x[5], -x[6], -x[7])
+    end,
+    ["Forward"] = function(x)
+        return Vector(x[9], x[10], x[11])
+    end,
+
     -- y is vec
     ["SetTranslation"] = function(x, y)
         x[ 4] = y[1]

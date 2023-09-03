@@ -45,7 +45,21 @@ function FLK3D.PopRenderTarget()
     FLK3D.RTStack[#FLK3D.RTStack] = nil
 end
 
-function FLK3D.Clear(r, g, b, depth)
+function FLK3D.Clear(r, g, b)
+    local rt = FLK3D.CurrRT
+    local rtParams = rt._params
+    local rtW, rtH = rtParams.w, rtParams.h
+
+    local dbuff = rt._depth
+
+    for i = 0, (rtW * rtH) - 1 do
+        rt[i] = {r or 0, g or 0, b or 0}
+
+        dbuff[i] = math.huge
+    end
+end
+
+function FLK3D.ClearOp(op, depth)
     depth = depth or true
     local rt = FLK3D.CurrRT
     local rtParams = rt._params
@@ -54,6 +68,8 @@ function FLK3D.Clear(r, g, b, depth)
     local dbuff = rt._depth
 
     for i = 0, (rtW * rtH) - 1 do
+        local r, g, b = op(i % rtW, math.floor(i / rtW), rt, rtW, rtH)
+
         rt[i] = {r or 0, g or 0, b or 0}
         dbuff[i] = math.huge
     end
