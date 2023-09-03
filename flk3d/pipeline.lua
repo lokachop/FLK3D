@@ -146,7 +146,6 @@ local _dbgOBJCount = 0
 local _dbgVertCount = 0
 local _dbgTriCount = 0
 FLK3D.DebugFragments = 0
-FLK3D.DebugFragmentsAttempted = 0
 
 local avgDtSamples = {}
 local sID = 0
@@ -207,7 +206,7 @@ local function renderDebug()
 	FLK3D.DrawText({0, 255, 0}, "VERT: " .. _dbgVertCount, 1, yVar, _background)
 	yVar = yVar + 8
 
-	FLK3D.DrawText({0, 255, 0}, "FRAG: " .. FLK3D.DebugFragments .. " [" .. FLK3D.DebugFragmentsAttempted .. "]", 1, yVar, _background)
+	FLK3D.DrawText({0, 255, 0}, "FRAG: " .. FLK3D.DebugFragments, 1, yVar, _background)
 	yVar = yVar + 8
 
 	_dbgOBJCount = 0

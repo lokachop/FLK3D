@@ -15,11 +15,22 @@ function love.load()
 		FLK3D.AddObjectToUniv("loka1", "lokachop_sqr")
 		FLK3D.SetObjectMat("loka1", "loka_sheet")
 
-		FLK3D.AddObjectToUniv("cube1", "cube")
+		FLK3D.AddObjectToUniv("cube1", "train")
 		FLK3D.SetObjectPos("cube1", Vector(-2, 0, 0))
-		FLK3D.SetObjectMat("cube1", "none")
+		FLK3D.SetObjectScl("cube1", Vector(.1, .1, .1))
+		FLK3D.SetObjectMat("cube1", "white")
 		FLK3D.SetObjectFlag("cube1", "SHADING", true)
 		FLK3D.SetObjectFlag("cube1", "SHADING_SMOOTH", true)
+
+		FLK3D.AddObjectToUniv("cube2", "cube")
+		FLK3D.SetObjectPos("cube2", Vector(-4, 0, 0))
+		FLK3D.SetObjectMat("cube2", "white")
+		FLK3D.SetObjectCol("cube2", {255, 0, 0})
+
+		FLK3D.AddObjectToUniv("cube3", "cube")
+		FLK3D.SetObjectPos("cube3", Vector(-5, 0, 0))
+		FLK3D.SetObjectMat("cube3", "white")
+		FLK3D.SetObjectCol("cube3", {0, 255, 0})
 
 
 		for i = 1, 3 do

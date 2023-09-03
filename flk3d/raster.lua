@@ -188,12 +188,14 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1
 
 	local dbuff = rt._depth
 
+	--[[
 	x0 = math_floor(x0)
 	y0 = math_floor(y0)
 	x1 = math_floor(x1)
 	y1 = math_floor(y1)
 	x2 = math_floor(x2)
 	y2 = math_floor(y2)
+	]]--
 
 	if FLK3D.WIREFRAME == 1 then
 		FLK3D.RenderLine(x0, y0, x1, y1, _white)
@@ -217,16 +219,13 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1
 
 	local texW, texH = tdata.data[1], tdata.data[2]
 
-	if FLK3D.Debug then
-		local dx = maxX - minX
-		local dy = maxY - minY
-
-		FLK3D.DebugFragmentsAttempted = FLK3D.DebugFragmentsAttempted + (dx * dy)
-	end
-
 
 	for y = minY, maxY do
 		for x = minX, maxX do
+			--x, y = math_round(x), math_round(y)
+			x, y = math_floor(x + .5), math_floor(y + .5)
+
+
 			local w1, w2, w0 = baryCentric(x + .5, y + .5, x0, y0, x1, y1, x2, y2)
 
 			if w0 < 0 or w1 < 0 or w2 < 0 then
@@ -275,11 +274,14 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1
 				rt[x + (y * rtW)] = {tCol[1] * rCalc, tCol[2] * gCalc, tCol[3] * bCalc}
 				dbuff[x + (y * rtW)] = dCalc
 
-
 				-- overdraw test
 				--local contPrev = rt[x + (y * rtW)]
 				--local _add = 16
 				--rt[x + (y * rtW)] = {contPrev[1] + _add, contPrev[2] + _add, contPrev[3] + _add}
+
+				-- zbuffer see
+				-- local dCol = dCalc * 16
+				-- rt[x + (y * rtW)] = {dCol, dCol, dCol}
 
 				if FLK3D.Debug then
 					FLK3D.DebugFragments = FLK3D.DebugFragments + 1
