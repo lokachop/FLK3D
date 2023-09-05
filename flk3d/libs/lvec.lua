@@ -187,6 +187,12 @@ local v_meta = {
 
         return LVEC.Vector(_rotMatrixCalc[9], _rotMatrixCalc[10], _rotMatrixCalc[11])
     end,
+    ["Distance"] = function(x, y)
+        return math.sqrt(math.pow(x[1] - y[1], 2) + math.pow(x[2] - y[2], 2) + math.pow(x[3] - y[3], 2))
+    end,
+    ["DistToSqr"] = function(x, y)
+        return math.pow(x[1] - y[1], 2) + math.pow(x[2] - y[2], 2) + math.pow(x[3] - y[3], 2)
+    end,
     ["isvec"] = true
 }
 

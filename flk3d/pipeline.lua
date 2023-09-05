@@ -189,7 +189,7 @@ local function renderDebug()
 	avgDT = avgDT / sampleCount
 
 	local fpsVar = 1 / avgDT
-	local fpsCol = fpsVar < 20 and _red or (fpsVar < 60 and _yellow or _green)
+	local fpsCol = fpsVar < 30 and _red or (fpsVar < 60 and _yellow or _green)
 
 	FLK3D.DrawText(fpsCol, "FPS : " .. string.format("%.2f", fpsVar), 1, yVar, _background)
 	yVar = yVar + 8
@@ -465,8 +465,6 @@ function FLK3D.RenderActiveUniverse()
 	end
 	local objects = FLK3D.CurrUniv["objects"]
 
-
-
 	-- lets zsort objects
 	local zsort = {}
 	for k, v in pairs(objects) do
@@ -498,4 +496,6 @@ function FLK3D.RenderActiveUniverse()
 	end
 
 	renderDebug()
+
+	FLK3D.CurrRT._frame = (FLK3D.CurrRT._frame or 0) + 1
 end

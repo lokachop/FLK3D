@@ -6,7 +6,8 @@ FLK3D.DO_PERSP_CORRECT_COLOUR   = true
 FLK3D.DO_PERSP_CORRECT_TEXTURE  = true
 
 FLK3D.TEXINTERP_MODE = 1 -- 0 = nearest, 1 = bayer
-FLK3D.WIREFRAME = 0
+FLK3D.WIREFRAME = false
+FLK3D.RENDER_HALF = true
 
 local relaPath = "flk3d/"
 function FLK3D.LoadFile(path)

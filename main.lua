@@ -15,20 +15,20 @@ function love.load()
 		FLK3D.AddObjectToUniv("loka1", "lokachop_sqr")
 		FLK3D.SetObjectMat("loka1", "loka_sheet")
 
-		FLK3D.AddObjectToUniv("cube1", "train")
+		FLK3D.AddObjectToUniv("cube1", "cube")
 		FLK3D.SetObjectPos("cube1", Vector(-2, 0, 0))
-		FLK3D.SetObjectScl("cube1", Vector(.1, .1, .1))
+		FLK3D.SetObjectScl("cube1", Vector(1, 1, 1))
 		FLK3D.SetObjectMat("cube1", "white")
 		FLK3D.SetObjectFlag("cube1", "SHADING", true)
 		FLK3D.SetObjectFlag("cube1", "SHADING_SMOOTH", true)
 
 		FLK3D.AddObjectToUniv("cube2", "cube")
-		FLK3D.SetObjectPos("cube2", Vector(-4, 0, 0))
+		FLK3D.SetObjectPos("cube2", Vector(-6, 0, 0))
 		FLK3D.SetObjectMat("cube2", "white")
 		FLK3D.SetObjectCol("cube2", {255, 0, 0})
 
 		FLK3D.AddObjectToUniv("cube3", "cube")
-		FLK3D.SetObjectPos("cube3", Vector(-5, 0, 0))
+		FLK3D.SetObjectPos("cube3", Vector(-7, 0, 0))
 		FLK3D.SetObjectMat("cube3", "white")
 		FLK3D.SetObjectCol("cube3", {0, 255, 0})
 
@@ -38,11 +38,11 @@ function love.load()
 			local indTrain = "train" .. indSeries
 			local xc = 2 + (i * 3)
 
-			FLK3D.AddObjectToUniv(indTrain, "train")
+			FLK3D.AddObjectToUniv(indTrain, "train_lod2")
 			FLK3D.SetObjectMat(indTrain, "train_sheet")
 			FLK3D.SetObjectPos(indTrain, Vector(xc, 0, 0))
 
-			for j = 1, 4 do
+			for j = 1, 1 do
 				local indTrack = "track" .. indSeries .. j
 				local zc = (j - 1) * 16
 
@@ -84,8 +84,9 @@ function love.draw()
 	love.graphics.clear(0, 0, 0)
 	FLK3D.PushUniverse(UnivTest)
 	FLK3D.PushRenderTarget(RTTest)
-		FLK3D.Clear(32, 48, 64)
+		FLK3D.ClearHalfed(32, 48, 64)
 
+		--FLK3D.WIREFRAME = true
 		FLK3D.RenderActiveUniverse()
 
 		FLK3D.RenderRTToScreen()

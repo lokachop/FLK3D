@@ -17,7 +17,10 @@ end
 
 loadModelFromOBJ("cube", "models/cubenuv.obj")
 loadModelFromOBJ("lokachop_sqr", "models/lokachopsqr.obj")
-loadModelFromOBJ("train", "models/train2.obj")
 
 loadModelFromOBJ("traintrack_hq", "models/traintrack.obj")
 loadModelFromOBJ("traintrack", "models/traintrack_lod.obj")
+
+loadModelFromOBJ("train", "models/train/train.obj")
+loadModelFromOBJ("train_lod1", "models/train/train_lod1.obj")
+loadModelFromOBJ("train_lod2", "models/train/train_lod2.obj")

@@ -174,12 +174,14 @@ local bayer4 = {
 
 local perspCol = FLK3D.DO_PERSP_CORRECT_COLOUR
 local perspTex = FLK3D.DO_PERSP_CORRECT_TEXTURE
+local renderHalf = FLK3D.RENDER_HALF
 
 local _TEX_NEAREST = 0
 local _TEX_BAYER = 1
 
 local _table = {255, 0, 0}
 local _white = {255, 255, 255}
+local _wfCol = {0, 255, 0}
 local texMode = FLK3D.TEXINTERP_MODE
 function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1_w, v2_w, u0, v0, u1, v1, u2, v2, tdata)
 	local rt = FLK3D.CurrRT
@@ -197,11 +199,18 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1
 	y2 = math_floor(y2)
 	]]--
 
-	if FLK3D.WIREFRAME == 1 then
-		FLK3D.RenderLine(x0, y0, x1, y1, _white)
-		FLK3D.RenderLine(x0, y0, x2, y2, _white)
+	if FLK3D.WIREFRAME then
+		x0 = math_floor(x0)
+		y0 = math_floor(y0)
+		x1 = math_floor(x1)
+		y1 = math_floor(y1)
+		x2 = math_floor(x2)
+		y2 = math_floor(y2)
 
-		FLK3D.RenderLine(x1, y1, x2, y2, _white)
+		FLK3D.RenderLine(x0, y0, x1, y1, _wfCol)
+		FLK3D.RenderLine(x0, y0, x2, y2, _wfCol)
+
+		FLK3D.RenderLine(x1, y1, x2, y2, _wfCol)
 
 		return
 	end
@@ -220,10 +229,15 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1
 	local texW, texH = tdata.data[1], tdata.data[2]
 
 
+	local rtFrame = rt._frame or 0
 	for y = minY, maxY do
 		for x = minX, maxX do
 			--x, y = math_round(x), math_round(y)
 			x, y = math_floor(x + .5), math_floor(y + .5)
+
+			if renderHalf and ((x + y) + rtFrame) % 2 == 0 then
+				goto _contBary
+			end
 
 
 			local w1, w2, w0 = baryCentric(x + .5, y + .5, x0, y0, x1, y1, x2, y2)
