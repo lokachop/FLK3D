@@ -8,7 +8,10 @@ function FLK3D.NewUniverse(tag)
 
     local univData = {
         ["objects"] = {},
-        ["tag"] = tag
+        ["tag"] = tag,
+        ["worldParameteri"] = {
+            ["SunDir"] = Vector(0, 0, -1)
+        }
     }
 
     print("new universe, \"" .. tag .. "\"")
@@ -27,7 +30,28 @@ function FLK3D.PushUniverse(univ)
     FLK3D.CurrUniv = univ
 end
 
-function FLK3D.PopUniverse(univ)
+function FLK3D.PopUniverse()
+    local _prev = FLK3D.CurrUniv
     FLK3D.CurrUniv = FLK3D.UniverseStack[#FLK3D.UniverseStack] or FLK3D.BaseUniv
     FLK3D.UniverseStack[#FLK3D.UniverseStack] = nil
+
+    return _prev
+end
+
+function FLK3D.ClearUniverse(univ)
+    univ = univ or FLK3D.CurrUniv
+
+    for k, v in pairs(univ["objects"]) do
+        univ[k] = nil
+    end
+end
+
+function FLK3D.GetUniverseByTag(tag)
+    return FLK3D.UniverseRegistry[tag]
+end
+
+function FLK3D.GetUniverseParams(univ)
+    univ = univ or FLK3D.CurrUniv
+
+    return univ.worldParameteri
 end

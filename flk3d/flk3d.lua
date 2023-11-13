@@ -5,7 +5,7 @@ FLK3D.Debug = true
 FLK3D.DO_PERSP_CORRECT_COLOUR   = true
 FLK3D.DO_PERSP_CORRECT_TEXTURE  = true
 
-FLK3D.TEXINTERP_MODE = 1 -- 0 = nearest, 1 = bayer
+FLK3D.TEXINTERP_MODE = 0 -- 0 = nearest, 1 = bayer, 2 = linear
 FLK3D.WIREFRAME = false
 FLK3D.RENDER_HALF = true
 
@@ -36,3 +36,5 @@ FLK3D.LoadFile("objects")
 FLK3D.LoadFile("camera")
 FLK3D.LoadFile("raster")
 FLK3D.LoadFile("pipeline")
+
+FLK3D.LoadFile("ulk3d_support")

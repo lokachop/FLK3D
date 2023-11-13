@@ -19,6 +19,21 @@ local function readByte(fileObject)
     end
 end
 
+local string_byte = string.byte
+local bit_band = bit.band
+local function readTripleBytes(fileObject)
+    if _COMPUTERCRAFT then
+        -- todo: support computercraft on this
+    else
+        local rv = fileObject:read(3)
+        local v1 = bit_band(string_byte(rv, 1), 0xFF)
+        local v2 = bit_band(string_byte(rv, 2), 0xFF)
+        local v3 = bit_band(string_byte(rv, 3), 0xFF)
+
+        return v1, v2, v3
+    end
+end
+
 local function closeFile(fileObject)
     if _COMPUTERCRAFT then
         fileObject.close()
@@ -110,9 +125,11 @@ function LKTEX.LoadPPM(name, path)
 
     local pixToRead = w * h
     for i = 0, (pixToRead - 1) do
-        local r = readByte(fObj)
-        local g = readByte(fObj)
-        local b = readByte(fObj)
+        --local r = readByte(fObj)
+        --local g = readByte(fObj)
+        --local b = readByte(fObj)
+
+        local r, g, b = readTripleBytes(fObj)
 
         data[i] = {r, g, b}
     end
@@ -134,6 +151,12 @@ LKTEX.LoadPPM("loka_sheet",         "textures/loka_sheet.ppm")
 LKTEX.LoadPPM("train_sheet",        "textures/train_sheet.ppm")
 LKTEX.LoadPPM("traintrack_sheet",   "textures/traintrack_sheet.ppm")
 LKTEX.LoadPPM("cubemap",            "textures/cubemap_lq.ppm")
+
+LKTEX.LoadPPM("vehicle_apc_hull",            "textures/vehicle_apc/vehicleHull.ppm")
+LKTEX.LoadPPM("vehicle_apc_turret",            "textures/vehicle_apc/vehicleTurret.ppm")
+LKTEX.LoadPPM("vehicle_apc_turret_cannon",            "textures/vehicle_apc/vehicleTurretCannon.ppm")
+LKTEX.LoadPPM("vehicle_apc_wheel",            "textures/vehicle_apc/vehicleWheel.ppm")
+
 
 function LKTEX.GetTexture(name)
     local tex = LKTEX.Textures[name]
@@ -172,6 +195,15 @@ function LKTEX.GenerateFunc(name, w, h, func)
     LKTEX.Textures[name] = data
 end
 
+function LKTEX.Generate(name, w, h, func)
+    if func then
+        LKTEX.GenerateFunc(name, w, h, func)
+    else
+        LKTEX.GenerateEmpty(name, w, h, {51, 0, 153})
+    end
+end
+
+
 function LKTEX.ClearTexture(name, data)
     for i = 0, ((w * h) - 1) do
         LKTEX.Textures[name][i] = data
@@ -179,3 +211,4 @@ function LKTEX.ClearTexture(name, data)
 end
 
 LKTEX.GenerateEmpty("white", 16, 16, {255, 255, 255})
+LKTEX.GenerateEmpty("indigo", 2, 2, {51, 0, 153})

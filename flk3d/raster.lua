@@ -178,11 +178,17 @@ local renderHalf = FLK3D.RENDER_HALF
 
 local _TEX_NEAREST = 0
 local _TEX_BAYER = 1
+local _TEX_LINEAR = 2
 
 local _table = {255, 0, 0}
 local _white = {255, 255, 255}
 local _wfCol = {0, 255, 0}
 local texMode = FLK3D.TEXINTERP_MODE
+
+
+local function lerp(t, a, b)
+	return a * (1-t) + b * t
+end
 function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1_w, v2_w, u0, v0, u1, v1, u2, v2, tdata)
 	local rt = FLK3D.CurrRT
 	local rtParams = rt._params
@@ -273,6 +279,33 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1
 					local tv = math_floor((texH * vCalc) + bayer4[bayerIdx]) % texH
 
 					tCol = tdata[tu + (tv * texW)]
+				elseif texMode == _TEX_LINEAR then
+					local du = (texW * uCalc) % 1
+					local dv = (texH * vCalc) % 1
+
+
+					local tu = math_floor(texW * uCalc) % texW
+					local tv = math_floor(texH * vCalc) % texH
+
+					local tu_a = math_floor((texW * uCalc) + 1) % texW
+					local tv_a = math_floor((texH * vCalc) + 1) % texH
+
+
+					local sp_tl = tdata[tu + (tv * texW)]
+					local sp_tr = tdata[tu_a + (tv * texW)]
+
+					local sp_bl = tdata[tu + (tv_a * texW)]
+					local sp_br = tdata[tu_a + (tv_a * texW)]
+
+
+					local _lerpH_T = {lerp(du, sp_tl[1], sp_tr[1]), lerp(du, sp_tl[2], sp_tr[2]), lerp(du, sp_tl[3], sp_tr[3])}
+					local _lerpH_B = {lerp(du, sp_bl[1], sp_br[1]), lerp(du, sp_bl[2], sp_br[2]), lerp(du, sp_bl[3], sp_br[3])}
+
+
+					tCol = {lerp(dv, _lerpH_T[1], _lerpH_B[1]), lerp(dv, _lerpH_T[2], _lerpH_B[2]), lerp(dv, _lerpH_T[3], _lerpH_B[3])}
+
+					--local _t_data = tdata[tu + (tv * texW)]
+					--tCol = {_t_data[1] + (du * 64), _t_data[2] + (dv * 64), _t_data[3]}
 				end
 
 				local rCalc = ((w0 * c0[1]) + (w1 * c1[1]) + (w2 * c2[1]))

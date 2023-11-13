@@ -38,6 +38,8 @@ function FLK3D.RenderRTToScreen()
     local cY = (scrH * .5) - ((rtH * .5) * _scl)
 
     love.graphics.draw(rt.lv_img, cX, cY, 0, _scl, _scl)
+
+    love.graphics.setBlendMode("alpha")
 end
 
 

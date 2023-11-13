@@ -37,10 +37,6 @@ function FLK3D.SetObjectPosAng(name, pos, ang)
 	FLK3D.CurrUniv["objects"][name].mat_rot:SetAngles(ang)
 end
 
-function FLK3D.SetObjectScale(name, scl)
-	FLK3D.CurrUniv["objects"][name].scl = scl or Vector(0, 0, 0)
-	FLK3D.CurrUniv["objects"][name].mat_transscl:SetScale(scl)
-end
 function FLK3D.SetObjectScl(name, scl)
 	FLK3D.CurrUniv["objects"][name].scl = scl or Vector(0, 0, 0)
 	FLK3D.CurrUniv["objects"][name].mat_transscl:SetScale(scl)

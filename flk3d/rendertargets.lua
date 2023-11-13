@@ -45,22 +45,27 @@ function FLK3D.PopRenderTarget()
     FLK3D.RTStack[#FLK3D.RTStack] = nil
 end
 
-function FLK3D.Clear(r, g, b)
+function FLK3D.Clear(r, g, b, depth)
+    depth = depth or true
     local rt = FLK3D.CurrRT
     local rtParams = rt._params
     local rtW, rtH = rtParams.w, rtParams.h
 
-    local dbuff = rt._depth
 
+    local dbuff = rt._depth
     for i = 0, (rtW * rtH) - 1 do
         rt[i] = {r or 0, g or 0, b or 0}
 
-        dbuff[i] = math.huge
+        if depth then
+            dbuff[i] = math.huge
+        end
     end
 end
 
 local renderHalf = FLK3D.RENDER_HALF
-function FLK3D.ClearHalfed(r, g, b)
+function FLK3D.ClearHalfed(r, g, b, depth)
+    depth = depth or true
+
     local rt = FLK3D.CurrRT
     local rtParams = rt._params
     local rtW, rtH = rtParams.w, rtParams.h
@@ -81,7 +86,9 @@ function FLK3D.ClearHalfed(r, g, b)
 
         rt[i] = {r or 0, g or 0, b or 0}
 
-        dbuff[i] = math.huge
+        if depth then
+            dbuff[i] = math.huge
+        end
 
         ::_contClear::
     end
