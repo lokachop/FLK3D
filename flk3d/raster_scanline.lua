@@ -9,7 +9,7 @@ local function math_round(x)
 	end
 end
 
-
+local math_floor = math.floor
 
 function FLK3D.RenderPixel(x, y, cont)
 	local rt = FLK3D.CurrRT
@@ -108,27 +108,57 @@ end
 
 
 
+
+local _v0 = {0, 0}
+local _v1 = {0, 0}
+local _v2 = {0, 0}
+
+local _d00, _d01, _d11, _d20, _d21 = 0, 0, 0, 0, 0
 local function baryCentric(px, py, ax, ay, bx, by, cx, cy)
-	local v0 = Vector(bx - ax, by - ay)
-	local v1 = Vector(cx - ax, cy - ay)
-	local v2 = Vector(px - ax, py - ay)
+	--local v0 = Vector(bx - ax, by - ay)
+	--local v1 = Vector(cx - ax, cy - ay)
+	--local v2 = Vector(px - ax, py - ay)
 
-	local d00 = v0:Dot(v0)
-	local d01 = v0:Dot(v1)
-	local d11 = v1:Dot(v1)
-	local d20 = v2:Dot(v0)
-	local d21 = v2:Dot(v1)
+	_v0[1] = bx - ax
+	_v0[2] = by - ay
 
-	local denom = d00 * d11 - d01 * d01
-	local v = (d11 * d20 - d01 * d21) / denom
-	local w = (d00 * d21 - d01 * d20) / denom
+	_v1[1] = cx - ax
+	_v1[2] = cy - ay
+
+	_v2[1] = px - ax
+	_v2[2] = py - ay
+
+	--local d00 = v0:Dot(v0)
+	_d00 = _v0[1] * _v0[1] + _v0[2] * _v0[2]
+
+	--local d01 = v0:Dot(v1)
+	_d01 = _v0[1] * _v1[1] + _v0[2] * _v1[2]
+
+	--local d11 = v1:Dot(v1)
+	_d11 = _v1[1] * _v1[1] + _v1[2] * _v1[2]
+
+	--local d20 = v2:Dot(v0)
+	_d20 = _v2[1] * _v0[1] + _v2[2] * _v0[2]
+
+	--local d21 = v2:Dot(v1)
+	_d21 = _v2[1] * _v1[1] + _v2[2] * _v1[2]
+
+	--local denom = d00 * d11 - d01 * d01
+	--local v = (d11 * d20 - d01 * d21) / denom
+	--local w = (d00 * d21 - d01 * d20) / denom
+	--local u = 1 - v - w
+
+	local denom = _d00 * _d11 - _d01 * _d01
+	local v = (_d11 * _d20 - _d01 * _d21) / denom
+	local w = (_d00 * _d21 - _d01 * _d20) / denom
 	local u = 1 - v - w
+
 
 	return v, w, u
 end
 
 local _tmpSwap = 0
-local function fast_horzline(sx, ex, y, cont, rt, rtW, rtH, vx0, vy0, vx1, vy1, vx2, vy2, dbuff, d0, d1, d2)
+local function fast_horzline(sx, ex, y, cont, rt, rtW, rtH, vx0, vy0, vx1, vy1, vx2, vy2, dbuff, v0_w, v1_w, v2_w)
 	if sx > ex then
 		_tmpSwap = sx
 		sx = ex
@@ -158,11 +188,14 @@ local function fast_horzline(sx, ex, y, cont, rt, rtW, rtH, vx0, vy0, vx1, vy1, 
 		--local w1 = edgeFunction(vx2, vy2, vx0, vy0, x, y) / area
 		--local w2 = edgeFunction(vx0, vy0, vx1, vy1, x, y) / area
 
-		local w1, w2, w0 = baryCentric(x, y, vx0, vy0, vx1, vy1, vx2, vy2)
+		local w1, w2, w0 = baryCentric(x + .5, y + .5, vx0, vy0, vx1, vy1, vx2, vy2)
 
 
-		local col = {w0 * 255, w1 * 255, w2 * 255}
-		local dCalc = -((w0 * d0) + (w1 * d1) + (w2 * d2))
+		local wCalc = -((w0 * v0_w) + (w1 * v1_w) + (w2 * v2_w))
+		local dCalc = (1 / wCalc)
+
+		local col = {dCalc * 255, dCalc * 255, dCalc * 255}
+
 		local prev = dbuff[x + (y * rtW)]
 
 		if (dCalc < prev) then
@@ -178,7 +211,7 @@ end
 
 
 local _whileCount = 32
-local function flatside_simple(x0, y0, x1, y1, x2, y2, cont, rx0, ry0, rx1, ry1, rx2, ry2, d0, d1, d2)
+local function flatside_simple(x0, y0, x1, y1, x2, y2, cont, rx0, ry0, rx1, ry1, rx2, ry2, v0_w, v1_w, v2_w)
 	local rt = FLK3D.CurrRT
 	local rtParams = rt._params
 	local rtW, rtH = rtParams.w, rtParams.h
@@ -225,7 +258,7 @@ local function flatside_simple(x0, y0, x1, y1, x2, y2, cont, rx0, ry0, rx1, ry1,
 
 
 	for i = 0, dx1 do
-		fast_horzline(vTmp1x, vTmp2x, vTmp1y, cont, rt, rtW, rtH, rx0, ry0, rx1, ry1, rx2, ry2, dbuff, d0, d1, d2)
+		fast_horzline(vTmp1x, vTmp2x, vTmp1y, cont, rt, rtW, rtH, rx0, ry0, rx1, ry1, rx2, ry2, dbuff, v0_w, v1_w, v2_w)
 
 		for _ = 1, _whileCount do
 			if e1 < 0 then
@@ -284,17 +317,17 @@ end
 
 local temp_xsort = 0
 local temp_ysort = 0
-function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, cont, d0, d1, d2)
+function FLK3D.RenderTriangleSimpleOld(x0, y0, x1, y1, x2, y2, cont, v0_w, v1_w, v2_w)
 	local ox0, oy0 = x0, y0
 	local ox1, oy1 = x1, y1
 	local ox2, oy2 = x2, y2
 
-	x0 = math_round(x0)
-	y0 = math_round(y0)
-	x1 = math_round(x1)
-	y1 = math_round(y1)
-	x2 = math_round(x2)
-	y2 = math_round(y2)
+	x0 = math_floor(x0)
+	y0 = math_floor(y0)
+	x1 = math_floor(x1)
+	y1 = math_floor(y1)
+	x2 = math_floor(x2)
+	y2 = math_floor(y2)
 
 	-- sort by y, x0, y0 should be top
 	if y0 > y1 then
@@ -329,16 +362,16 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, cont, d0, d1, d2)
 
 
 	if y1 == y2 then
-		flatside_simple(x0, y0, x1, y1, x2, y2, cont, ox0, oy0, ox1, oy1, ox2, oy2, d0, d1, d2)
+		flatside_simple(x0, y0, x1, y1, x2, y2, cont, ox0, oy0, ox1, oy1, ox2, oy2, v0_w, v1_w, v2_w)
 	elseif y0 == y1 then
-		flatside_simple(x2, y2, x1, y1, x0, y0, cont, ox0, oy0, ox1, oy1, ox2, oy2, d0, d1, d2)
+		flatside_simple(x2, y2, x1, y1, x0, y0, cont, ox0, oy0, ox1, oy1, ox2, oy2, v0_w, v1_w, v2_w)
 	else
 
-		local x3 = math_round(x0 + ((y1 - y0) / (y2 - y0)) * (x2 - x0))
-		local y3 = math_round(y1)
+		local x3 = math_floor(x0 + ((y1 - y0) / (y2 - y0)) * (x2 - x0))
+		local y3 = math_floor(y1)
 
-		flatside_simple(x0, y0, x1, y1, x3, y3, cont, ox0, oy0, ox1, oy1, ox2, oy2, d0, d1, d2)
-		flatside_simple(x2, y2, x1, y1, x3, y3, cont, ox0, oy0, ox1, oy1, ox2, oy2, d0, d1, d2)
+		flatside_simple(x0, y0, x1, y1, x3, y3, cont, ox0, oy0, ox1, oy1, ox2, oy2, v0_w, v1_w, v2_w)
+		flatside_simple(x2, y2, x1, y1, x3, y3, cont, ox0, oy0, ox1, oy1, ox2, oy2, v0_w, v1_w, v2_w)
 	end
 
 
@@ -351,4 +384,12 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, cont, d0, d1, d2)
 			col = cont
 		}
 	end
+end
+
+function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1_w, v2_w, u0, v0, u1, v1, u2, v2, tdata)
+	FLK3D.RenderTriangleSimpleOld(x0, y0, x1, y1, x2, y2, cont, v0_w, v1_w, v2_w)
+end
+
+function FLK3D.DrawText(content, message, xAdd, yAdd, background)
+
 end

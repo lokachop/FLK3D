@@ -110,115 +110,87 @@ end
 
 ULK3D.PrintDebug("ULK3D Loading on engine \"" .. ULK3D.EngineName .. "\"")
 
+-- Shader Capabilities:
+ULK3D_CAPAB_VERTSHADER_LUA = 1  -- lua vert shader funcs on objects
+ULK3D_CAPAB_FRAGSHADER_LUA = 2  -- lua frag shader on objects (software only)
+ULK3D_CAPAB_VERTSHADER_GLSL = 3 -- glsl vert shader funcs on objects (hwaccel only)
+ULK3D_CAPAB_FRAGSHADER_GLSL = 4 -- glsl frag shader on objects (hwaccel only)
+
+-- Lighting Capabilities:
+ULK3D_CAPAB_VERTLIGHT = 20      -- vertex lighting (LK3D)
+ULK3D_CAPAB_FRAGLIGHT = 21      -- fragment lighting (per-pixel)
+ULK3D_CAPAB_SHADOWVOLUME = 22   -- shadow volumes
+ULK3D_CAPAB_LIGHTMAP = 23       -- loading LLM lightmaps
+ULK3D_CAPAB_LIGHTMAP_GEN = 24   -- generating LLM lightmaps
+
+-- Rendering Capabilities:
+ULK3D_CAPAB_WIREFRAME = 40          -- can draw wireframe triangles
+ULK3D_CAPAB_FLAT = 41               -- can draw filled triangles (solid colour with no colour)
+ULK3D_CAPAB_FLAT_1_COL = 42         -- can draw filled triangles (with non interpolated colour)
+ULK3D_CAPAB_FLAT_3_COL = 43         -- can draw filled triangles (with colour interpolation)
+ULK3D_CAPAB_TEXTURED = 44           -- can draw textured triangles (with no colour)
+ULK3D_CAPAB_TEXTURED_1COL = 45      -- can draw textured triangles (with non interpolated colour)
+ULK3D_CAPAB_TEXTURED_3COL = 46      -- can draw textured triangles (with interpolated colour)
+ULK3D_CAPAB_LM_TEXTURED_3COL = 47   -- can draw lightmapped textured triangles (with interpolated colour)
+ULK3D_CAPAB_TEXTURE_AFFINE = 48     -- can draw affine triangles
+ULK3D_CAPAB_TEXTURE_PERSP = 49      -- can draw perspective-correct triangles
+
+
+-- Texture Capabilities:
+ULK3D_CAPAB_TEXTURE = 60            -- can do texturing
+ULK3D_CAPAB_TEXFILTER_NONE = 61     -- can do nearest texture filterin
+ULK3D_CAPAB_TEXFILTER_BAYER = 62    -- can do bayer filtering
+ULK3D_CAPAB_TEXFILTER_LINEAR = 63   -- can do linear
+
+-- Format Capabilities:
+ULK3D_CAPAB_LOAD_LKPACK = 80    -- can load LKPack files
+ULK3D_CAPAB_LOAD_LLM = 81       -- lightmap loading from .llm
+ULK3D_CAPAB_LOAD_OBJ = 82       -- can load obj models
+ULK3D_CAPAB_LOAD_LKC = 83       -- can load LKComp models
+ULK3D_CAPAB_LOAD_PPM = 84       -- can load PPM textures
+ULK3D_CAPAB_LOAD_PNG = 85       -- can load PNG textures
+ULK3D_CAPAB_LOAD_LKF = 86       -- can load LKF files (keyframes)
+
+
+-- HW Capabilities:
+ULK3D_CAPAB_GPUACCEL = 100      -- if the engine has hardware support (ex. hardware rendered LK3D)
+ULK3D_CAPAB_LIGHTMAP_GEN = 101  -- lightmap generation (slow) output .llm
+
+
+-- ObjectFlag Capabilities:
+ULK3D_CAPAB_OBJECT_SHADE_FLAT = 120     -- flat shading
+ULK3D_CAPAB_OBJECT_SHADE_SMOOTH = 121   -- gouraud shading
+ULK3D_CAPAB_OBJECT_TRANSLATE = 122      -- translation
+ULK3D_CAPAB_OBJECT_ROTATE = 123         -- rotation
+ULK3D_CAPAB_OBJECT_SCALE = 124          -- scaling
+ULK3D_CAPAB_OBJECT_CACHE = 125          -- mesh caching (LK3D-style)
+ULK3D_CAPAB_OBJECT_COLOUR = 126         -- set object colour
+ULK3D_CAPAB_OBJECT_ANIMATE = 127        -- can object be animated
+
+
+
+-- Module Capabilities:
+ULK3D_CAPAB_MODELUTILS = 140     -- if the engine has the modelUtils module
+ULK3D_CAPAB_PARTICLES = 141      -- if the engine has the particles module
+ULK3D_CAPAB_PROCMODEL = 142      -- if the engine has the procModel module
+ULK3D_CAPAB_NOISE = 143          -- if the engine has the noise module
+ULK3D_CAPAB_PROCTEX = 144        -- if the engine has the procTex module
+ULK3D_CAPAB_PHYSICS = 145        -- if the engine has the physics modul
+ULK3D_CAPAB_BENCHMARK = 146      -- if the engine has the benchmakr module
+ULK3D_CAPAB_TEXTUREUTILS = 147   -- if the engine has the textureutils module
+ULK3D_CAPAB_TRACESYSTEM = 148    -- if the engine has the tracesystem module
+
+
+
 --[[
-    Basic Capabilities:
-        consts:
-        ULK3D_CAPAB_VERTSHADER_LUA = 1 // lua vert shader funcs on objects
-        ULK3D_CAPAB_VERTSHADER_GLSL = 2 // glsl vert shader funcs on objects
-        ULK3D_CAPAB_FRAGSHADER_LUA = 3 // lua frag shader on objects (software only)
-        ULK3D_CAPAB_FRAGSHADER_GLSL = 4 // glsl frag shader on objects (software only)
-        ULK3D_CAPAB_VERTLIGHT = 5 // vertex lighting (LK3D)
-        ULK3D_CAPAB_FRAGLIGHT = 6 // fragment lighting (per-pixel)
-        ULK3D_CAPAB_TEXTURE = 7 // texturing (all LK3Ds)
-        ULK3D_CAPAB_TEXFILTER_LINEAR = 8 // texfilter linear (most LK3Ds)
-        ULK3D_CAPAB_LIGHTMAP = 9 // lightmap loading from .llm
-        ULK3D_CAPAB_LIGHTMAP_GEN = 10 // lightmap generation (slow) output .llm
-        ULK3D_CAPAB_GPUACCEL = 11 // if the engine has hardware support (ex. hardware rendered LK3D)
-
-    Module Capabilities:
-        consts:
-        ULK3D_CAPAB_MODELUTILS = 30 // if the engine has the modelUtils module
-        ULK3D_CAPAB_PARTICLES = 31 // if the engine has the particles module
-        ULK3D_CAPAB_PROCMODEL = 32 // if the engine has the procModel module
-        ULK3D_CAPAB_NOISE = 33 // if the engine has the noise module
-        ULK3D_CAPAB_PROCTEX = 34 // if the engine has the procTex module
-        ULK3D_CAPAB_PHYSICS = 35 // if the engine has the physics module (none yet :()
-        ULK3D_CAPAB_BENCHMARK = 36 // if the engine has the benchmakr module
-        ULK3D_CAPAB_TEXTUREUTILS = 37 // if the engine has the textureutils module
-        ULK3D_CAPAB_TRACESYSTEM = 38 // if the engine has the tracesystem module
-
-
-    ObjectFlag Capabilities:
-        consts:
-        ULK3D_CAPAB_OBJECT_SHADE = 50 // flat shading
-        ULK3D_CAPAB_OBJECT_SHADE_SMOOTH = 51 // gouraud shading
-        ULK3D_CAPAB_OBJECT_TRANSLATE = 52 // translation
-        ULK3D_CAPAB_OBJECT_ROTATE = 53 // rotation
-        ULK3D_CAPAB_OBJECT_SCALE = 54 // scaling
-        ULK3D_CAPAB_OBJECT_CACHE = 55 // mesh caching (LK3D-style)
-
-
         function ULK3D.GetCapabilities()
             returns a table pointer with the capabilities of the platforms
 
         function ULK3D.GetCapability(number capab)
-            returns if the current engine can do that capability, nil if invalid
+            returns if the current engine can do that capability, nil if invalid / non existent capability
 ]]--
 
--- general
-ULK3D_CAPAB_VERTSHADER_LUA = 1
-ULK3D_CAPAB_VERTSHADER_GLSL = 2
-ULK3D_CAPAB_FRAGSHADER_LUA = 3
-ULK3D_CAPAB_FRAGSHADER_GLSL = 4
-ULK3D_CAPAB_VERTLIGHT = 5
-ULK3D_CAPAB_FRAGLIGHT = 6
-ULK3D_CAPAB_TEXTURE = 7
-ULK3D_CAPAB_TEXFILTER_LINEAR = 8
-ULK3D_CAPAB_LIGHTMAP = 9
-ULK3D_CAPAB_LIGHTMAP_GEN = 10
-ULK3D_CAPAB_GPUACCEL = 11
-
--- module capabilities
-ULK3D_CAPAB_MODELUTILS = 30
-ULK3D_CAPAB_PARTICLES = 31
-ULK3D_CAPAB_PROCMODEL = 32
-ULK3D_CAPAB_NOISE = 33
-ULK3D_CAPAB_PROCTEX = 34
-ULK3D_CAPAB_PHYSICS = 35
-ULK3D_CAPAB_BENCHMARK = 36
-ULK3D_CAPAB_TEXTUREUTILS = 37
-ULK3D_CAPAB_TRACESYSTEM = 38
-
-
--- object
-ULK3D_CAPAB_OBJECT_SHADE = 50
-ULK3D_CAPAB_OBJECT_SHADE_SMOOTH = 51
-ULK3D_CAPAB_OBJECT_TRANSLATE = 52
-ULK3D_CAPAB_OBJECT_ROTATE = 53
-ULK3D_CAPAB_OBJECT_SCALE = 54
-ULK3D_CAPAB_OBJECT_CACHE = 55
-
 local _capabilities = {
-    -- general
-    [        ULK3D_CAPAB_VERTSHADER_LUA] = false,
-    [       ULK3D_CAPAB_VERTSHADER_GLSL] = false,
-    [        ULK3D_CAPAB_FRAGSHADER_LUA] = false,
-    [       ULK3D_CAPAB_FRAGSHADER_GLSL] = false,
-    [             ULK3D_CAPAB_VERTLIGHT] = false,
-    [             ULK3D_CAPAB_FRAGLIGHT] = false,
-    [               ULK3D_CAPAB_TEXTURE] = true,
-    [              ULK3D_CAPAB_LIGHTMAP] = false,
-    [          ULK3D_CAPAB_LIGHTMAP_GEN] = false,
-    [              ULK3D_CAPAB_GPUACCEL] = false,
-
-    -- modules
-    [            ULK3D_CAPAB_MODELUTILS] = false,
-    [             ULK3D_CAPAB_PARTICLES] = false,
-    [             ULK3D_CAPAB_PROCMODEL] = false,
-    [                 ULK3D_CAPAB_NOISE] = false,
-    [               ULK3D_CAPAB_PROCTEX] = false,
-    [               ULK3D_CAPAB_PHYSICS] = false,
-    [             ULK3D_CAPAB_BENCHMARK] = false,
-    [          ULK3D_CAPAB_TEXTUREUTILS] = false,
-    [           ULK3D_CAPAB_TRACESYSTEM] = false,
-
-    -- object
-    [          ULK3D_CAPAB_OBJECT_SHADE] = true,
-    [   ULK3D_CAPAB_OBJECT_SHADE_SMOOTH] = true,
-    [      ULK3D_CAPAB_OBJECT_TRANSLATE] = true,
-    [         ULK3D_CAPAB_OBJECT_ROTATE] = true,
-    [          ULK3D_CAPAB_OBJECT_SCALE] = true,
-    [          ULK3D_CAPAB_OBJECT_CACHE] = false,
 }
 
 function ULK3D.GetCapabilities()

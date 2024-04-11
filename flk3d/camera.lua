@@ -32,6 +32,14 @@ function FLK3D.BuildProjectionMatrix(aspect, near, far)
 	FLK3D.CamMatrix_Proj[16] = 0
 end
 
+function FLK3D.GetCamPos()
+	return FLK3D.CamMatrix_Trans:GetTranslation()
+end
+
+function FLK3D.GetCamDir()
+	return FLK3D.CamMatrix_Rot:Forward()
+end
+
 
 function FLK3D.SetCamPos(pos)
 	FLK3D.CamPos = pos or FLK3D.CamPos

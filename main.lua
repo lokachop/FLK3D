@@ -28,14 +28,16 @@ function love.load()
 		FLK3D.AddObjectToUniv("cube2", "cube")
 		FLK3D.SetObjectPos("cube2", Vector(-6, 0, 0))
 		FLK3D.SetObjectMat("cube2", "white")
-		FLK3D.SetObjectCol("cube2", {255, 0, 0})
+		FLK3D.SetObjectCol("cube2", {1, 1, 1})
+		FLK3D.SetObjectFlag("cube2", "SHADING", true)
+		FLK3D.SetObjectFlag("cube2", "SHADING_SMOOTH", false)
 
 		FLK3D.AddObjectToUniv("cube3", "cube")
 		FLK3D.SetObjectPos("cube3", Vector(-10, 0, 0))
 		FLK3D.SetObjectMat("cube3", "white")
-		FLK3D.SetObjectCol("cube3", {0, 255, 0})
+		FLK3D.SetObjectCol("cube3", {1, 1, 1})
 		FLK3D.SetObjectFlag("cube3", "SHADING", true)
-		FLK3D.SetObjectFlag("cube3", "SHADING_SMOOTH", false)
+		FLK3D.SetObjectFlag("cube3", "SHADING_SMOOTH", true)
 
 		for i = 1, 3 do
 			local indSeries = i .. "s"
@@ -132,6 +134,45 @@ function love.load()
 		FLK3D.SetObjectMat("apcWheelBR", "vehicle_apc_wheel")
 		FLK3D.SetObjectFlag("apcWheelBR", "SHADING", apc_do_shading)
 		FLK3D.SetObjectFlag("apcWheelBR", "SHADING_SMOOTH", apc_do_shading_smooth)
+
+
+
+
+
+		-- physics
+		FLK3D.SetUnivGravity(Vector(0, -100, 0))
+		local PLANE_SZ = 16
+		local PLANE_BLOCKS = 4
+		local szDelta = PLANE_SZ / PLANE_BLOCKS
+
+		FLK3D.AddPhysicsBodyToUniv("phys_floor")
+		FLK3D.SetPhysicsBodyPos("phys_floor", Vector(0, -4, 0))
+		FLK3D.SetPhysicsBodyScl("phys_floor", Vector(PLANE_SZ, 1, PLANE_SZ))
+		FLK3D.SetPhysicsBodyStatic("phys_floor", true)
+
+
+		for i = 0, (PLANE_BLOCKS * PLANE_BLOCKS) - 1 do
+			local xc = (i % PLANE_BLOCKS) - PLANE_BLOCKS * .5
+			local yc = math.floor(i / PLANE_BLOCKS) - PLANE_BLOCKS * .5
+
+			local id = "pFloor" .. i
+
+			FLK3D.AddObjectToUniv(id, "cube")
+			FLK3D.SetObjectMat(id, "white")
+			FLK3D.SetObjectPosAng(id, Vector(xc * szDelta, -4, yc * szDelta), Angle(0, 0, 0))
+			FLK3D.SetObjectScl(id, Vector(szDelta, 1, szDelta) * .5)
+			FLK3D.SetObjectFlag(id, "SHADING", true)
+			FLK3D.SetObjectFlag(id, "SHADING_SMOOTH", false)
+
+			if (xc + yc) % 2 == 0 then
+				FLK3D.SetObjectMat(id, "red1")
+			else
+				FLK3D.SetObjectMat(id, "red2")
+			end
+		end
+
+
+
 	FLK3D.PopUniverse()
 end
 
@@ -143,6 +184,35 @@ function love.mousemoved(mx, my, dx, dy)
 	FLK3D.MouseCamUpdate(dx, dy)
 end
 
+
+
+local shootFlag = false
+local shootID = 1
+local function fireClick()
+	if love.mouse.isDown(1) then
+		if shootFlag then
+			return
+		end
+		shootID = shootID + 1
+
+
+		local tag = "BoxShoot" .. shootID
+		FLK3D.AddPhysicsBodyToUniv(tag)
+		FLK3D.SetPhysicsBodyScl(tag, Vector(1, 1, 1))
+		FLK3D.SetPhysicsBodyPos(tag, -FLK3D.GetCamPos())
+		FLK3D.SetPhysicsBodyVel(tag, -FLK3D.GetCamDir() * 25)
+		FLK3D.SetPhysicsBodyStatic(tag, false)
+
+
+
+		shootFlag = true
+	elseif shootFlag then
+		shootFlag = false
+	end
+
+end
+
+
 function love.update(dt)
 	CurTime = CurTime + dt
 	--FLK3D.NoclipCam(dt)
@@ -150,6 +220,11 @@ function love.update(dt)
 
 	FLK3D.PushUniverse(UnivTest)
 		FLK3D.SetObjectAng("cube2", Angle(CurTime * 64, CurTime * 48, 0))
+		FLK3D.SetObjectAng("cube3", Angle(CurTime * 64, CurTime * 48, 0))
+
+		fireClick()
+		FLK3D.DebugRenderPhysicsObjects()
+		FLK3D.PhysicsThink(dt)
 	FLK3D.PopUniverse()
 end
 

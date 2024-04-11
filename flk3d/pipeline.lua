@@ -252,8 +252,9 @@ local function renderObject(obj)
 
 		local cpy = vert:Copy()
 		-- local
+		cpy = cpy * obj.mat_scl
 		cpy = cpy * obj.mat_rot
-		cpy = cpy * obj.mat_transscl
+		cpy = cpy * obj.mat_pos
 
 		-- TODO: implement cam matrix
 		local transRot = FLK3D.CamMatrix_Rot * FLK3D.CamMatrix_Trans
@@ -470,8 +471,9 @@ function FLK3D.RenderActiveUniverse()
 	for k, v in pairs(objects) do
 		local cpy = v.pos:Copy()
 		-- local
+		cpy = cpy * v.mat_scl
 		cpy = cpy * v.mat_rot
-		cpy = cpy * v.mat_transscl
+		cpy = cpy * v.mat_pos
 
 		local transRot = FLK3D.CamMatrix_Rot * FLK3D.CamMatrix_Trans
 		cpy = cpy * transRot

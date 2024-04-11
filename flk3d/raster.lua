@@ -144,21 +144,50 @@ function FLK3D.RenderLine(x1, y1, x2, y2, cont)
 end
 
 
+local _v0 = {0, 0}
+local _v1 = {0, 0}
+local _v2 = {0, 0}
+
+local _d00, _d01, _d11, _d20, _d21 = 0, 0, 0, 0, 0
 local function baryCentric(px, py, ax, ay, bx, by, cx, cy)
-	local v0 = Vector(bx - ax, by - ay)
-	local v1 = Vector(cx - ax, cy - ay)
-	local v2 = Vector(px - ax, py - ay)
+	--local v0 = Vector(bx - ax, by - ay)
+	--local v1 = Vector(cx - ax, cy - ay)
+	--local v2 = Vector(px - ax, py - ay)
 
-	local d00 = v0:Dot(v0)
-	local d01 = v0:Dot(v1)
-	local d11 = v1:Dot(v1)
-	local d20 = v2:Dot(v0)
-	local d21 = v2:Dot(v1)
+	_v0[1] = bx - ax
+	_v0[2] = by - ay
 
-	local denom = d00 * d11 - d01 * d01
-	local v = (d11 * d20 - d01 * d21) / denom
-	local w = (d00 * d21 - d01 * d20) / denom
+	_v1[1] = cx - ax
+	_v1[2] = cy - ay
+
+	_v2[1] = px - ax
+	_v2[2] = py - ay
+
+	--local d00 = v0:Dot(v0)
+	_d00 = _v0[1] * _v0[1] + _v0[2] * _v0[2]
+
+	--local d01 = v0:Dot(v1)
+	_d01 = _v0[1] * _v1[1] + _v0[2] * _v1[2]
+
+	--local d11 = v1:Dot(v1)
+	_d11 = _v1[1] * _v1[1] + _v1[2] * _v1[2]
+
+	--local d20 = v2:Dot(v0)
+	_d20 = _v2[1] * _v0[1] + _v2[2] * _v0[2]
+
+	--local d21 = v2:Dot(v1)
+	_d21 = _v2[1] * _v1[1] + _v2[2] * _v1[2]
+
+	--local denom = d00 * d11 - d01 * d01
+	--local v = (d11 * d20 - d01 * d21) / denom
+	--local w = (d00 * d21 - d01 * d20) / denom
+	--local u = 1 - v - w
+
+	local denom = _d00 * _d11 - _d01 * _d01
+	local v = (_d11 * _d20 - _d01 * _d21) / denom
+	local w = (_d00 * _d21 - _d01 * _d20) / denom
 	local u = 1 - v - w
+
 
 	return v, w, u
 end
@@ -246,7 +275,28 @@ function FLK3D.RenderTriangleSimple(x0, y0, x1, y1, x2, y2, c0, c1, c2, v0_w, v1
 			end
 
 
-			local w1, w2, w0 = baryCentric(x + .5, y + .5, x0, y0, x1, y1, x2, y2)
+			_v0[1] = x1 - x0
+			_v0[2] = y1 - y0
+
+			_v1[1] = x2 - x0
+			_v1[2] = y2 - y0
+
+			_v2[1] = x + .5 - x0
+			_v2[2] = y + .5 - y0
+
+			_d00 = _v0[1] * _v0[1] + _v0[2] * _v0[2]
+			_d01 = _v0[1] * _v1[1] + _v0[2] * _v1[2]
+			_d11 = _v1[1] * _v1[1] + _v1[2] * _v1[2]
+			_d20 = _v2[1] * _v0[1] + _v2[2] * _v0[2]
+			_d21 = _v2[1] * _v1[1] + _v2[2] * _v1[2]
+
+			local denom = _d00 * _d11 - _d01 * _d01
+			local w1 = (_d11 * _d20 - _d01 * _d21) / denom
+			local w2 = (_d00 * _d21 - _d01 * _d20) / denom
+			local w0 = 1 - w1 - w2
+
+
+			--local w1, w2, w0 = baryCentric(x + .5, y + .5, x0, y0, x1, y1, x2, y2)
 
 			if w0 < 0 or w1 < 0 or w2 < 0 then
 				goto _contBary

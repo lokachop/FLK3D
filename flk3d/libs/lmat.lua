@@ -207,6 +207,10 @@ local mat_meta = {
         return Angle(-roll, pitch, yaw)
     end,
 
+    ["GetTranslation"] = function(x)
+        return Vector(x[4], x[8], x[12])
+    end,
+
     ["Right"] = function(x)
         return Vector(x[1], x[2], x[3])
     end,
@@ -230,6 +234,20 @@ local mat_meta = {
         x[ 6] = y[2]
         x[11] = y[3]
         x[16] = y[4]
+    end,
+
+    ["CopyRotation"] = function(x, y)
+        x[ 1] = y[ 1]
+        x[ 2] = y[ 2]
+        x[ 3] = y[ 3]
+
+        x[ 5] = y[ 5]
+        x[ 6] = y[ 6]
+        x[ 7] = y[ 7]
+
+        x[ 9] = y[ 9]
+        x[10] = y[10]
+        x[11] = y[11]
     end,
 
     ["ismatrix"] = true

@@ -212,3 +212,7 @@ end
 
 LKTEX.GenerateEmpty("white", 16, 16, {255, 255, 255})
 LKTEX.GenerateEmpty("indigo", 2, 2, {51, 0, 153})
+
+
+LKTEX.GenerateEmpty("red1", 2, 2, {196, 96, 96})
+LKTEX.GenerateEmpty("red2", 2, 2, {128, 64, 64})
